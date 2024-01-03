@@ -25,6 +25,7 @@ import org.bitcoinj.base.ScriptType;
 import org.bitcoinj.base.internal.PlatformUtils;
 import org.bitcoinj.core.Context;
 import org.bitcoinj.core.NetworkParameters;
+import org.bitcoinj.core.PeerAddress;
 import org.bitcoinj.kits.WalletAppKit;
 import org.bitcoinj.utils.AppDataDirectory;
 import org.bitcoinj.utils.BriefLogFormatter;
@@ -37,6 +38,7 @@ import wallettemplate.WalletSetPasswordController;
 import jakarta.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
 
 import static org.bitcoinj.walletfx.utils.GuiUtils.informationalAlert;
 
@@ -160,7 +162,9 @@ public abstract class WalletApplication implements AppDelegate {
 
     public void setupWalletKit(@Nullable DeterministicSeed seed) {
         // If seed is non-null it means we are restoring from backup.
-        File appDataDirectory = AppDataDirectory.get(applicationName).toFile();
+        // File appDataDirectory = AppDataDirectory.get(applicationName).toFile();
+        // fixme: 仅测试
+        File appDataDirectory = new File("/tmp/bitcoinj_example_test");
         walletAppKit = new WalletAppKit(network, preferredOutputScriptType, keyChainGroupStructure, appDataDirectory, walletFileName) {
             @Override
             protected void onSetupCompleted() {
@@ -170,7 +174,16 @@ public abstract class WalletApplication implements AppDelegate {
         // Now configure and start the appkit. This will take a second or two - we could show a temporary splash screen
         // or progress widget to keep the user engaged whilst we initialise, but we don't.
         if (network == BitcoinNetwork.REGTEST) {
-            walletAppKit.connectToLocalHost();   // You should run a regtest mode bitcoind locally.
+            // walletAppKit.connectToLocalHost();   // You should run a regtest mode bitcoind locally.
+            // fixme: 仅测试
+            InetAddress addr = null;
+            try {
+                addr = InetAddress.getByName("10.221.57.178");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            PeerAddress regtestPeerAddress = PeerAddress.simple(addr, 18444);
+            walletAppKit.setPeerNodes(regtestPeerAddress);
         }
         walletAppKit.setDownloadListener(controller.progressBarUpdater())
                 .setBlockingStartup(false)
