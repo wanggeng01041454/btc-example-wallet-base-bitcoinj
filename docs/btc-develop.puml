@@ -1,0 +1,93 @@
+@startuml 01.dev-env 
+    title
+        比特币开发环境
+    end title
+
+    node server [
+        =bitcoind
+        ----
+        <color:Blue>[machine-a]
+        ----
+        启动命令：
+        ....
+        <code>
+        #!/bin/bash
+        DATA_DIR=/home/gk/workspace/bitcoin/data
+
+        bitcoind \\
+        -chain=regtest \\
+        -datadir=${DATA_DIR} \\
+        -daemon \\
+        </code>
+    ]
+    note left
+        有效的配置文件内容：
+        ----
+        <code>
+        rpcallowip=10.221.56.32
+        rpcallowip=127.0.0.1
+
+        # username=alice; password=alice
+        # 省略
+        rpcauth=alice:7...4$a...4
+        # username=bob; password=bob
+        rpcauth=bob:0...a$8...d
+
+        server=1
+
+        [regtest]
+        rpcbind=0.0.0.0:9999
+        </code>
+        ----
+        节点必须使用默认端口号；
+        * 主网: 8333
+        * 测试网: 18333
+        * signet测试网: 38333
+        * regtest（自测）: 18444
+        ====
+        =rpc端口号和节点默认端口号
+        =是不同的概念，不能混淆
+    end note 
+
+
+    node client1 [
+        =bitcoin-cli
+        ----
+        <color:Blue>[machine-a]
+        ----
+        有效的配置文件（~/.bitcoin/bitcoin.conf）
+        ....
+        <code>
+        chain=regtest
+
+        [regtest]
+        rpcconnect=127.0.0.1
+        rpcport=9999
+        rpcuser=alice
+        rpcpassword=alice
+        </code>
+    ]
+
+    node client2 [
+        =bitcoin-cli
+        ----
+        <color:Red>[machine-b]
+        【后面的开发、测试环境就在 machine-b 上】
+        ----
+        有效的配置文件（~/.bitcoin/bitcoin.conf）
+        ....
+        <code>
+        chain=regtest
+
+        [regtest]
+        rpcconnect=10.221.57.178
+        rpcport=9999
+        rpcuser=bob
+        rpcpassword=bob
+        </code>
+    ]
+
+    server <-- client1
+    server <-- client2
+@enduml
+

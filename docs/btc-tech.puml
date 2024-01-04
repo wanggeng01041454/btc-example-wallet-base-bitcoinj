@@ -1,0 +1,74 @@
+@startuml taproot校验流程
+    title
+        Taproot支出校验流程
+    end title
+
+    start
+
+    :将witness中的所有元素按顺序逐个压栈;
+
+    package #Pink "退出检查" {
+        if (栈为空？) then (=是)
+            :校验失败;
+
+            stop
+        endif 
+    }
+
+    package #LightGray  "附件检查" {
+        if (至少有2个元素在栈中？) then (是)
+            if (栈顶元素的首字节是否为 0x50 ？) then (是)
+                :栈顶元素是 
+                =附件;
+
+                :=将栈顶元素弹出栈;
+                note left
+                    =附件 不参与
+                    后面的Taproot支出校验
+                end note 
+            endif
+        endif 
+    }
+
+    if (有且只有1个元素在栈中？) then (是)
+        #LimeGreen:这是 
+        =key path spending 的场景
+        按此场景进行处理|
+    else if (至少有2个元素在栈中？) then (是)
+        #DeepSkyBlue:这是 
+        =script path spending 的场景
+        按此场景进行处理|
+    endif 
+
+    stop
+
+@enduml
+
+@startuml ssp 
+    title
+        script path sending (使用脚本花费)场景
+    end title
+
+    start
+
+    :使用控制块和脚本进行默克尔证明校验|
+
+    if (校验通过?) then (是)
+        :将控制块数据出栈;
+
+        :将脚本数据出栈;
+
+        :使用当前栈执行脚本;
+
+        if(脚本执行中无异常且执行后栈顶为1 ？) then (是)
+            #DarkGreen:<color:White>校验通过;
+        else 
+            #Pink:校验失败;
+        endif 
+    else (否)
+        #Pink:校验失败;
+    endif 
+
+    stop
+
+@enduml
